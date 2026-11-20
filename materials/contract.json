@@ -1,0 +1,157 @@
+{
+  "synthetic": true,
+  "description": "青少年读物需求预测与印次承诺的合成输入资料；不含未来分析结论。",
+  "tables": {
+    "books": {
+      "description": "合成青少年读物版本。",
+      "fields": {
+        "id": "书目版本",
+        "price": "定价元",
+        "print_cost": "每册印制成本元",
+        "storage_units": "每册占用库容单位",
+        "pack": "整包交付册数"
+      },
+      "references": {}
+    },
+    "channels": {
+      "description": "渠道及退货成熟期。",
+      "fields": {
+        "id": "渠道",
+        "label": "含义",
+        "return_window": "退货通常成熟天数；不代表所有订单有可退权"
+      },
+      "references": {}
+    },
+    "sales": {
+      "description": "两年逐日可售经历与销量；无货时销量被截尾。",
+      "fields": {
+        "id": "销售行",
+        "book_id": "版本",
+        "channel_id": "渠道",
+        "on": "发生日",
+        "received_on": "收到日",
+        "sold": "售出册数",
+        "open_hours": "有货可售小时",
+        "available_copies": "当日可售册数",
+        "promotion": "是否有活动"
+      },
+      "references": {
+        "book_id": "books",
+        "channel_id": "channels"
+      }
+    },
+    "orders": {
+      "description": "渠道不同强度的需求承诺。",
+      "fields": {
+        "id": "订单",
+        "book_id": "版本",
+        "channel_id": "渠道",
+        "kind": "paid已付款/preorder预售/intent意向",
+        "copies": "册数",
+        "placed_on": "下单日",
+        "due_on": "交付日",
+        "cancellable": "是否允许取消"
+      },
+      "references": {
+        "book_id": "books",
+        "channel_id": "channels"
+      }
+    },
+    "returns": {
+      "description": "退货成熟、收到及实物验收分别记录。",
+      "fields": {
+        "id": "退货",
+        "sale_id": "原销售行",
+        "reported_on": "渠道报退日",
+        "matured_on": "可用于成熟退货分析的日期",
+        "copies": "报退册数",
+        "received_on": "实物收到日，null为尚未收到",
+        "resellable": "验收可再售册数",
+        "refund": "退回金额元"
+      },
+      "references": {
+        "sale_id": "sales"
+      }
+    },
+    "print_slots": {
+      "description": "可选印厂时段。",
+      "fields": {
+        "id": "产能时段",
+        "from_on": "可开印日",
+        "delivery_on": "预计到货日",
+        "maximum": "最多印册数",
+        "minimum": "起印量",
+        "deposit_ratio": "确认预付比例"
+      },
+      "references": {}
+    },
+    "limits": {
+      "description": "经营额度。",
+      "fields": {
+        "id": "额度",
+        "cash": "可用现金元",
+        "storage": "剩余库容单位",
+        "on": "额度日期"
+      },
+      "references": {}
+    },
+    "stock": {
+      "description": "账面现有可交付存量。",
+      "fields": {
+        "id": "存量",
+        "book_id": "版本",
+        "copies": "实物可交付册数",
+        "on": "盘点日"
+      },
+      "references": {
+        "book_id": "books"
+      }
+    },
+    "print_confirmations": {
+      "description": "已确认印次。",
+      "fields": {
+        "id": "印次",
+        "book_id": "版本",
+        "slot_id": "印厂时段",
+        "copies": "确认册数",
+        "confirmed_on": "确认日",
+        "reserved_cash": "占用现金元"
+      },
+      "references": {
+        "book_id": "books",
+        "slot_id": "print_slots"
+      }
+    },
+    "promises": {
+      "description": "已向渠道发出的承诺。",
+      "fields": {
+        "id": "承诺",
+        "order_id": "订单",
+        "print_id": "依赖印次",
+        "copies": "承诺册数",
+        "confirmed_on": "确认日",
+        "due_on": "承诺交付日"
+      },
+      "references": {
+        "order_id": "orders",
+        "print_id": "print_confirmations"
+      }
+    },
+    "print_actuals": {
+      "description": "印厂实际部分交付与余量取消。",
+      "fields": {
+        "id": "生产事实",
+        "print_id": "印次",
+        "on": "日期",
+        "kind": "arrived到货/cancelled取消",
+        "copies": "册数"
+      },
+      "references": {
+        "print_id": "print_confirmations"
+      }
+    }
+  },
+  "notes": [
+    "数据覆盖2024-10至2026-09，足以形成按时间滚动的训练与退货成熟观察；不得把received_on之后才知道的记录用于更早回测。"
+  ]
+}
